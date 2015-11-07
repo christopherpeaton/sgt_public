@@ -65,3 +65,7 @@ with a visual of those objects stored.
 #### Data available appearance
 <img src="https://cloud.githubusercontent.com/assets/10343746/9148437/22e2566e-3d30-11e5-9401-ba2cb8309d65.png" width="500"/>
 
+- <a href="https://github.com/Learning-Fuze/SGT/tree/v.1#getting-started">Getting Started</a>
+- <a href="https://github.com/Learning-Fuze/SGT/tree/v.1#scope">View Scope</a>
+- <a href="https://github.com/Learning-Fuze/SGT/tree/v.1#design">View Design</a>
+- <a href="https://github.com/Learning-Fuze/SGT/tree/v.1#assignments---aka-criteria-for-success-on-this-version-of-the-project">View Assignments</a>

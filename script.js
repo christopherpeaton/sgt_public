@@ -23,7 +23,21 @@ var student_array = [];
 $(document).ready(function () {
     addClick();
     cancelClicked();
-    sgtOnload();
+
+
+    $("body").on("click", ".del-btn", function () {
+        console.log(this);
+        var index = $(this).attr("student_index");
+        console.log(student_array, "student_array before");
+        delete student_array[index];
+        console.log(student_array, "student_array before");
+        $(this).parent().remove();
+
+        gradeAverage();
+    });
+    //
+
+
 });
 
 /**
@@ -88,20 +102,27 @@ function addClick() {
          * dynamically creates student grade table and appends to body
          */
         for (var i = 0; i < student_array.length; i++) {
-            var nName = $('<td>', {
-                text: student_array[i].name
-            });
-            var nCourse = $('<td>', {
-                text: student_array[i].course
-            });
-            var nGrade = $('<td>', {
-                text: student_array[i].grade
-            });
-            var deleteB = $('<button>', {
-                type: "button",
-                class: "btn btn-danger",
-                text: "Delete"
-            });
+
+            if (student_array[i]) {
+                var nName = $('<td>', {
+                    text: student_array[i].name
+                });
+
+                var nCourse = $('<td>', {
+                    text: student_array[i].course
+                });
+                var nGrade = $('<td>', {
+                    text: student_array[i].grade
+                });
+
+                var deleteB = $('<button>', {
+                    type: "button",
+                    class: "btn btn-danger del-btn",
+                    text: "Delete",
+                    student_index: i
+                });
+            }
+
         }
         var nRow = $('<tr>', {
             id: "tableBody"
@@ -120,6 +141,7 @@ function cancelClicked() {
         $("#studentGrade").val('');
     })
 }
+
 
 /**
  * addStudent - creates a student objects based on input fields in the form and adds the object to global student array
@@ -143,12 +165,17 @@ function cancelClicked() {
 function gradeAverage() {
     var sum = 0;
     var average = 0;
-
+    var count = 0;
     for (var i = 0; i < student_array.length; i++) {
-        sum += parseInt(student_array[i].grade);
+
+        if (student_array[i]) {
+            count++;
+            sum += parseInt(student_array[i].grade);
+        }
+
     }
-    average = sum / student_array.length;
-    $(".avgGrade").text(average);
+    average = sum / count;
+    $(".avgGrade").text(Math.round(average));
     return average;
 }
 

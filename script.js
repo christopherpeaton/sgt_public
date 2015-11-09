@@ -2,45 +2,30 @@
  * Define all global variables here
  */
 //Here, I'm setting up all the possible global variables that could exist, and that could be useful moving forward
-/*unnecessary variables
- var student_name_table;
- var student_course_table;
- var student_grade_table;
- var operations_table;
 
- var delete_button;
- var add_button;
- var cancel_button;
- */
 var student_name_input;
 var student_course_input;
 var student_grade_input;
 var student_grade_average;
+var global_result;
 /**
- * student_array - global array to hold student objects
+ * define global array that will hold the student objects (created separately)
  * @type {Array}
  */
-//define global array that will hold the student objects (created separately)
 var student_array = [];
 
 
 /**
- * inputIds - id's of the elements that are used to add students
- * //Student Name will be added with the input id: "#student_name"
- * //Student Course will be added with the input id: "#course"
- * //Student grade will be added with the input id: "#student_grade
- * @type {string[]}
+ * Here, we are going to use a function called addClick to handle all events when the add button is clicked.
+ * by adding a cancelClicked() into the document.ready, I ensure that it will load after all other events have subsided
+ * prevents double adding data upon clicking add button
  */
-
-/**
- * addClicked - Event Handler when user clicks the add button
- */
-//Here, we are going to use a function called addClick to handle all events when the add button is clicked
 $(document).ready(function () {
     addClick();
-    //by adding a cancelClicked() into the document.ready, I ensure that it will load after all other events have subsided
-    //prevents double adding data upon clicking add button
     cancelClicked();
+    sgtOnload();
+
+
     $("body").on("click", ".del-btn", function () {
         console.log(this);
         var index = $(this).attr("student_index");
@@ -51,13 +36,79 @@ $(document).ready(function () {
 
         gradeAverage();
     });
-    //
+
 
 });
+
+/**
+ * here is the function to pull from the server
+ */
+function sgtOnload() {
+    console.log("hi dan");
+    $.ajax({
+        dataType: 'json',
+        data: {
+            api_key: "FvFMoid4Gy"
+        },
+        url: 'http://s-apis.learningfuze.com/sgt/get',
+        crossDomain: true,
+        type: 'POST',
+        success: function (result) {
+            console.log('AJAX Success function called, with the following result:', result);
+            global_result = result;
+            for (i = 0; i < global_result.data.length; i++) {
+                var studentObject = global_result.data[i];
+                addStudentsToTable(studentObject);
+            }
+
+            //global_result.feed.entry[0]["im:image"][2].label;
+            //var movie = global_result["feed"]["entry"];
+            //for (i = 0; i < movie.length; i++) {
+            //    var img = $("<img>",{
+            //        src: movie[i]["im:image"][2]["label"]
+            //    });
+            //    var titleDir = $("<div>", {
+            //        html: movie[i]["title"]["label"],
+            //        html: movie[i]["im:artist"]["label"]
+            //    });
+            //    $("#main").append(img);
+            //    $("#main").append(titleDir);
+        }
+
+        //}
+    });
+}
+function addStudentsToTable(student_object) {
+    if (student_object) {
+        var nName = $('<td>', {
+            text: student_object.name
+        });
+        var nCourse = $('<td>', {
+            text: student_object.course
+        });
+        var nGrade = $('<td>', {
+            text: student_object.grade
+        });
+        var deleteB = $('<button>', {
+            type: "button",
+            class: "btn btn-danger del-btn",
+            text: "Delete",
+            //student_index:
+        });
+        var nRow = $('<tr>', {
+            id: "tableBody"
+        });
+        $(nRow).append(nName, nCourse, nGrade, deleteB);
+        $('#tableBody').append(nRow);
+    }
+}
+/**
+ * Set up and add #studentName/#course/#studentGrade to DOM
+ */
 function addClick() {
     $("#addClicked").click(function () {
-        var student_name_input = $("#studentName").val();  //here, I'm setting up to add to the DOM
-        $("#studentName").val(student_name_input);      //here, I add #studentName to the DOM
+        var student_name_input = $("#studentName").val();
+        $("#studentName").val(student_name_input);
         var student_course_input = $("#course").val();
         $("#course").val(student_course_input);
         var student_grade_input = $("#studentGrade").val();
@@ -72,9 +123,15 @@ function addClick() {
         student_array.push(student_object);
         console.log(student_array);
         gradeAverage();
-        //define student object, append to DOM
-        //loop through array; figure out why there are double entries, etc.
+        /**
+         *  define student object, append to DOM
+         */
+
+        /**
+         * dynamically creates student grade table and appends to body
+         */
         for (var i = 0; i < student_array.length; i++) {
+
             if (student_array[i]) {
                 var nName = $('<td>', {
                     text: student_array[i].name
@@ -94,26 +151,18 @@ function addClick() {
                     student_index: i
                 });
             }
+
         }
         var nRow = $('<tr>', {
             id: "tableBody"
         });
         $('#tableBody').prepend(nRow);
         $(nRow).append(nName, nCourse, nGrade, deleteB);
-
-        /*student_object.name=student_name_input;
-         $("#tableBody").append(student_object.name);
-         student_object.course=student_course_input;
-         $("#tableBody").append(student_object.course);
-         student_object.grade=student_grade_input;
-         $("#tableBody").append(student_object.grade);*/
-
     });
 }
 /**
- * cancelClicked - Event Handler when user clicks the cancel button, should clear out student form
+ * this will clear out the AddStudentForm
  */
-//this will clear out the AddStudentForm  (now we have to figure out a way to add new rows of data, likely using a for loop)
 function cancelClicked() {
     $("#clickCancel").click(function () {
         $("#studentName").val('');
@@ -138,21 +187,25 @@ function cancelClicked() {
  * @returns {number}
  *
  */
-//grade average function call calculates correct average of input; however, in the console, the value for sum and average come up as undefined. check up on this
+/**
+ * grade average function call calculates correct average of input;
+ * however, in the console, the value for sum and average come up as undefined. check up on this
+ */
 function gradeAverage() {
     var sum = 0;
     var average = 0;
     var count = 0;
     for (var i = 0; i < student_array.length; i++) {
+
         if (student_array[i]) {
             count++;
             sum += parseInt(student_array[i].grade);
         }
+
     }
     average = sum / count;
     $(".avgGrade").text(Math.round(average));
     return average;
-
 }
 
 
@@ -172,7 +225,6 @@ function updateData() {
 /**
  * updateStudentList - loops through global student array and appends each objects data into the student-list-container > list-body
  */
-//a bit lost on this function. My dom creation occurred in the addClick function, not its own function
 function updateStudentList() {
     for (var list = 0; list < student_array.length; list++) {
         $("#tableBody").empty();
@@ -182,29 +234,14 @@ function updateStudentList() {
      * into the .student_list tbody
      * @param studentObj
      */
-//function domCreation(i) {
-    /*  for(var i=0;i<student_array.length;i++) {
-     var nName = $('<td>', {
-     text: student_array[i].name
-     });
-     var nCourse = $('<td>', {
-     text: student_array[i].course
-     });
-     var nGrade = $('<td>', {
-     text: student_array[i].grade
-     });
-     }
-     var nRow = $('<tr>', {
-     id: "tableBody"
-     });
-     $('#tableBody').prepend(nRow);
-     $(nRow).append(nName, nCourse, nGrade);
-     } */
 
     /**
      * reset - resets the application to initial state. Global variables reset, DOM get reset to initial load state
      */
-//set global variables to 0
+
+    /**
+     * set global variables to 0
+     */
     function reset() {
         student_name_input = 0;
         student_course_input = 0;
@@ -215,6 +252,8 @@ function updateStudentList() {
     };
     reset();
 }
+
+
 /**
  * Listen for the document to load and reset the data to the initial state
  */

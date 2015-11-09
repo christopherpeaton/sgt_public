@@ -23,6 +23,7 @@ var student_array = [];
 $(document).ready(function () {
     addClick();
     cancelClicked();
+    sgtOnload();
 
 
     $("body").on("click", ".del-btn", function () {
@@ -35,7 +36,6 @@ $(document).ready(function () {
 
         gradeAverage();
     });
-    //
 
 
 });
@@ -44,17 +44,23 @@ $(document).ready(function () {
  * here is the function to pull from the server
  */
 function sgtOnload() {
+    console.log("hi dan");
     $.ajax({
         dataType: 'json',
         data: {
             api_key: "FvFMoid4Gy"
         },
-        url: 'http://s-apis.learningfuze.com/sgt/reflect',
+        url: 'http://s-apis.learningfuze.com/sgt/get',
         crossDomain: true,
         type: 'POST',
         success: function (result) {
             console.log('AJAX Success function called, with the following result:', result);
             global_result = result;
+            for (i = 0; i < global_result.data.length; i++) {
+                var studentObject = global_result.data[i];
+                addStudentsToTable(studentObject);
+            }
+
             //global_result.feed.entry[0]["im:image"][2].label;
             //var movie = global_result["feed"]["entry"];
             //for (i = 0; i < movie.length; i++) {
@@ -67,12 +73,35 @@ function sgtOnload() {
             //    });
             //    $("#main").append(img);
             //    $("#main").append(titleDir);
-            sgtOnload();
         }
 
         //}
     });
-};
+}
+function addStudentsToTable(student_object) {
+    if (student_object) {
+        var nName = $('<td>', {
+            text: student_object.name
+        });
+        var nCourse = $('<td>', {
+            text: student_object.course
+        });
+        var nGrade = $('<td>', {
+            text: student_object.grade
+        });
+        var deleteB = $('<button>', {
+            type: "button",
+            class: "btn btn-danger del-btn",
+            text: "Delete",
+            //student_index:
+        });
+        var nRow = $('<tr>', {
+            id: "tableBody"
+        });
+        $('#tableBody').prepend(nRow);
+        $(nRow).append(nName, nCourse, nGrade, deleteB);
+    }
+}
 /**
  * Set up and add #studentName/#course/#studentGrade to DOM
  */
@@ -223,6 +252,8 @@ function updateStudentList() {
     };
     reset();
 }
+
+
 /**
  * Listen for the document to load and reset the data to the initial state
  */

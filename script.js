@@ -8,6 +8,7 @@ var student_course_input;
 var student_grade_input;
 var student_grade_average;
 var global_result;
+var api_key = "FvFMoid4Gy";
 /**
  * define global array that will hold the student objects (created separately)
  * @type {Array}
@@ -16,14 +17,12 @@ var student_array = [];
 
 
 /**
- * Here, we are going to use a function called addClick to handle all events when the add button is clicked.
- * by adding a cancelClicked() into the document.ready, I ensure that it will load after all other events have subsided
- * prevents double adding data upon clicking add button
+ * addClick(), cancelClicked(), sgtOnLoad() will be run after the dom is fully loaded and ready
  */
 $(document).ready(function () {
     addClick();
     cancelClicked();
-    sgtOnload();
+    sgtOnLoad();
 
 
     $("body").on("click", ".del-btn", function () {
@@ -36,19 +35,18 @@ $(document).ready(function () {
 
         gradeAverage();
     });
-
-
 });
 
 /**
- * here is the function to pull from the server
+ * here is the function to pull student info from the server
  */
-function sgtOnload() {
+function sgtOnLoad() {
+
     console.log("hi dan");
     $.ajax({
         dataType: 'json',
         data: {
-            api_key: "FvFMoid4Gy"
+            api_key,
         },
         url: 'http://s-apis.learningfuze.com/sgt/get',
         crossDomain: true,
@@ -60,24 +58,71 @@ function sgtOnload() {
                 var studentObject = global_result.data[i];
                 addStudentsToTable(studentObject);
             }
-
-            //global_result.feed.entry[0]["im:image"][2].label;
-            //var movie = global_result["feed"]["entry"];
-            //for (i = 0; i < movie.length; i++) {
-            //    var img = $("<img>",{
-            //        src: movie[i]["im:image"][2]["label"]
-            //    });
-            //    var titleDir = $("<div>", {
-            //        html: movie[i]["title"]["label"],
-            //        html: movie[i]["im:artist"]["label"]
-            //    });
-            //    $("#main").append(img);
-            //    $("#main").append(titleDir);
         }
-
-        //}
     });
 }
+/**
+ * function adds student information from inputs on page to the server and the sgt online
+ * @param studentObject
+ */
+function studentToServer(studentObject) {
+    //Variables to work with are below:
+    //api_key:string for api access
+    //studentObject: object that contains student data
+    console.log('studentToServer', studentObject);
+    $.ajax({
+        dataType: 'json',
+        data: {
+            api_key,
+            name: studentObject.name,
+            course: studentObject.course,
+            grade: studentObject.grade
+        },
+        url: 'http://s-apis.learningfuze.com/sgt/create',
+        crossDomain: true,
+        type: 'POST',
+        success: function (result) {
+            console.log('AJAX Success function called, with the following result:', result);
+            global_result = result;
+            if (global_result.success === false) {
+                console.log("there was an error")
+            } else {
+                console.log("There was no error")
+            }
+
+
+        }
+    });
+}
+
+function deleteFromServer(student_object) {
+    console.log('deleteFromServer', studentObject);
+    $.ajax({
+        dataType: 'json',
+        data: {
+            api_key,
+            student_id: [i]
+        },
+        url: 'http://s-apis.learningfuze.com/sgt/delete',
+        crossDomain: true,
+        type: 'POST',
+        success: function (result) {
+            console.log('AJAX Success function called, with the following result:', result);
+            global_result = result;
+            if (global_result.success === false) {
+                console.log("there was an error")
+            } else {
+                console.log("There was no error")
+            }
+        }
+    });
+}
+
+/**
+ * this function takes in student_object (student_name,student_course,student_grade) and dynamically creates them and
+ * puts them on the board
+ * @param student_object
+ */
 function addStudentsToTable(student_object) {
     if (student_object) {
         var nName = $('<td>', {
@@ -92,7 +137,7 @@ function addStudentsToTable(student_object) {
         var deleteB = $('<button>', {
             type: "button",
             class: "btn btn-danger del-btn",
-            text: "Delete",
+            text: "Delete"
             //student_index:
         });
         var nRow = $('<tr>', {
@@ -119,13 +164,10 @@ function addClick() {
             course: student_course_input,
             grade: student_grade_input
         };
-
         student_array.push(student_object);
-        console.log(student_array);
+        studentToServer(student_object);
+        //console.log(student_array);
         gradeAverage();
-        /**
-         *  define student object, append to DOM
-         */
 
         /**
          * dynamically creates student grade table and appends to body
@@ -151,7 +193,6 @@ function addClick() {
                     student_index: i
                 });
             }
-
         }
         var nRow = $('<tr>', {
             id: "tableBody"
@@ -160,6 +201,7 @@ function addClick() {
         $(nRow).append(nName, nCourse, nGrade, deleteB);
     });
 }
+
 /**
  * this will clear out the AddStudentForm
  */
@@ -168,28 +210,12 @@ function cancelClicked() {
         $("#studentName").val('');
         $("#course").val('');
         $("#studentGrade").val('');
-    })
+    });
 }
 
-
-/**
- * addStudent - creates a student objects based on input fields in the form and adds the object to global student array
- *
- * @return undefined
- */
-
-/**
- * clearAddStudentForm - clears out the form values based on inputIds variable
- */
-
-/**
- * calculateAverage - loop through the global student array and calculate average grade and return that value
- * @returns {number}
- *
- */
 /**
  * grade average function call calculates correct average of input;
- * however, in the console, the value for sum and average come up as undefined. check up on this
+ * @returns {number}
  */
 function gradeAverage() {
     var sum = 0;
@@ -201,19 +227,11 @@ function gradeAverage() {
             count++;
             sum += parseInt(student_array[i].grade);
         }
-
     }
     average = sum / count;
     $(".avgGrade").text(Math.round(average));
     return average;
 }
-
-
-/**
- * addStudentToDom - take in a student object, create html elements from the values and then append the elements
- * into the .student_list tbody
- * @param studentObj
- */
 
 /**
  * updateData - centralized function to update the average and call student list update
@@ -221,7 +239,8 @@ function gradeAverage() {
 function updateData() {
     updateStudentList();
     gradeAverage();
-};
+}
+
 /**
  * updateStudentList - loops through global student array and appends each objects data into the student-list-container > list-body
  */
@@ -229,15 +248,6 @@ function updateStudentList() {
     for (var list = 0; list < student_array.length; list++) {
         $("#tableBody").empty();
     }
-    /**
-     * addStudentToDom - take in a student object, create html elements from the values and then append the elements
-     * into the .student_list tbody
-     * @param studentObj
-     */
-
-    /**
-     * reset - resets the application to initial state. Global variables reset, DOM get reset to initial load state
-     */
 
     /**
      * set global variables to 0
@@ -249,11 +259,6 @@ function updateStudentList() {
         student_grade_average = 0;
         updateData();
         updateStudentList()
-    };
+    }
     reset();
 }
-
-
-/**
- * Listen for the document to load and reset the data to the initial state
- */

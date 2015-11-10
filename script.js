@@ -15,7 +15,6 @@ var api_key = "FvFMoid4Gy";
  */
 var student_array = [];
 
-
 /**
  * addClick(), cancelClicked(), sgtOnLoad() will be run after the dom is fully loaded and ready
  */
@@ -24,15 +23,15 @@ $(document).ready(function () {
     cancelClicked();
     sgtOnLoad();
 
-
     $("body").on("click", ".del-btn", function () {
-        console.log(this);
+        console.log(" ti think it should be", this);
         var index = $(this).attr("student_index");
         console.log(student_array, "student_array before");
         delete student_array[index];
         console.log(student_array, "student_array before");
+        console.log("this is", this)
         $(this).parent().remove();
-
+        deleteFromServer(index);
         gradeAverage();
     });
 });
@@ -46,7 +45,7 @@ function sgtOnLoad() {
     $.ajax({
         dataType: 'json',
         data: {
-            api_key,
+            api_key
         },
         url: 'http://s-apis.learningfuze.com/sgt/get',
         crossDomain: true,
@@ -95,13 +94,13 @@ function studentToServer(studentObject) {
     });
 }
 
-function deleteFromServer(student_object) {
-    console.log('deleteFromServer', studentObject);
+function deleteFromServer(index) {
+    console.log('deleteFromServer', index);
     $.ajax({
         dataType: 'json',
         data: {
             api_key,
-            student_id: [i]
+            student_id: index
         },
         url: 'http://s-apis.learningfuze.com/sgt/delete',
         crossDomain: true,
@@ -137,8 +136,8 @@ function addStudentsToTable(student_object) {
         var deleteB = $('<button>', {
             type: "button",
             class: "btn btn-danger del-btn",
-            text: "Delete"
-            //student_index:
+            text: "Delete",
+            student_index: student_object.id
         });
         var nRow = $('<tr>', {
             id: "tableBody"
@@ -190,7 +189,7 @@ function addClick() {
                     type: "button",
                     class: "btn btn-danger del-btn",
                     text: "Delete",
-                    student_index: i
+                    student_index: student_object.id
                 });
             }
         }
